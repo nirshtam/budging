@@ -1,0 +1,12 @@
+services:
+  backend:
+    build:
+      context: ./backend
+      dockerfile: ./Dockerfile
+    environment:
+      PEM_KEY_PATH: ${PEM_CONTAINER_PATH}
+    env_file: "./backend/.env"
+    ports:
+      - "8000:8000"
+    volumes:
+      - "${PEM_HOST_PATH}:${PEM_CONTAINER_PATH}:ro"
