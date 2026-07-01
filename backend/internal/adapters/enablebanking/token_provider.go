@@ -1,4 +1,4 @@
-package infrastructure
+package bank_client
 
 import (
 	"crypto/rsa"
