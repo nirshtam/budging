@@ -1,2 +1,3 @@
-# budging
-Personal finance open banking expense tracker
+# Budging
+
+## Personal finance open banking expense tracker
