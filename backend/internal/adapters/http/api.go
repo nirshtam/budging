@@ -1,9 +1,18 @@
 package http
 
-import "net/http"
+import (
+	"budging/backend/internal/core/application"
+	"log"
+	"net/http"
+)
 
-func startHttpServer() {
-	apiMux := http.NewServeMux()
+func StartHttpServer(bankService *application.BankService) {
+	mux := http.NewServeMux()
+	bankingHandler := &BankingHandler{bankService: bankService}
+	RegisterBankingRoutes(mux, bankingHandler)
 
-	http.ListenAndServe(":8000", apiMux)
+	err := http.ListenAndServe(":8000", mux)
+	if err != nil {
+		log.Fatal("Unable to start http server: ", err)
+	}
 }

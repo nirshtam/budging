@@ -29,7 +29,7 @@ func main() {
 	// repository := repository.NewEnableBankingRepository("https://api.enablebanking.com", signKey)
 
 	http.ListenAndServe(":8000", nil)
-	// resp, err := repository.GetAspsps(&tokenProvider)
+	// resp, err := repository.GetAspsp(&tokenProvider)
 	// if err != nil {
 	// 	log.Fatal("Failed to retrieve aspsps")
 	// }

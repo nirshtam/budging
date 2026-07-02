@@ -1,19 +1,21 @@
-// Package bank_client
-package bank_client
+package enablebanking
 
 import (
+	"budging/backend/internal/core/domain"
 	"crypto/rsa"
+	"io"
 	"log"
 	"net/http"
 )
 
 type EnableBankingRepository struct {
-	baseURL string
-	signKey *rsa.PrivateKey
+	baseURL       string
+	tokenProvider *TokenProvider
+	mapper        *Mapper
 }
 
-func (repository EnableBankingRepository) GetAspsps(tokenProvider *TokenProvider) (*http.Response, error) {
-	token, err := tokenProvider.GetToken()
+func (repository EnableBankingRepository) GetAspsp() ([]domain.Aspsp, error) {
+	token, err := repository.tokenProvider.GetToken()
 	if err != nil {
 		log.Fatal("Failed to issue token: ", err)
 	}
@@ -26,8 +28,15 @@ func (repository EnableBankingRepository) GetAspsps(tokenProvider *TokenProvider
 
 	client := &http.Client{}
 	resp, err := client.Do(req)
-
-	return resp, err
+	if err != nil {
+		return nil, err
+	}
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+	return repository.mapper.MapAspsp(string(body))
 }
 
 func (repository EnableBankingRepository) Authenticate(tokenProvider *TokenProvider) (*http.Response, error) {
@@ -53,6 +62,6 @@ func (repository EnableBankingRepository) Authenticate(tokenProvider *TokenProvi
 	return resp, err
 }
 
-func NewEnableBankingRepository(baseURL string, signKey *rsa.PrivateKey) *EnableBankingRepository {
-	return &EnableBankingRepository{baseURL: baseURL, signKey: signKey}
+func NewEnableBankingClient(baseURL string, signKey *rsa.PrivateKey, appId string) *EnableBankingRepository {
+	return &EnableBankingRepository{baseURL: baseURL, tokenProvider: &TokenProvider{AppID: appId, SignKey: signKey}}
 }

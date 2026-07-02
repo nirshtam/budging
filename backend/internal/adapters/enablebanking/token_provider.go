@@ -1,4 +1,4 @@
-package bank_client
+package enablebanking
 
 import (
 	"crypto/rsa"
