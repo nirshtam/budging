@@ -6,11 +6,11 @@ import (
 )
 
 type BankService struct {
-	bankClient ports.BankClient
+	BankClient ports.BankClient
 }
 
 func (service *BankService) GetAspsp() ([]domain.Aspsp, error) {
-	aspspList, err := service.bankClient.GetAspsp()
+	aspspList, err := service.BankClient.GetAspsp()
 	if err != nil {
 		return nil, err
 	}
@@ -18,5 +18,5 @@ func (service *BankService) GetAspsp() ([]domain.Aspsp, error) {
 }
 
 func NewBankService(bankClient ports.BankClient) *BankService {
-	return &BankService{bankClient: bankClient}
+	return &BankService{BankClient: bankClient}
 }

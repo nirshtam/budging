@@ -1,43 +1,41 @@
 package main
 
 import (
-	// "crypto/rsa"
-	// "fmt"
-	// "io"
-	// "log"
-	"net/http"
-	// "os"
-	// "budging/backend/infrastructure"
-	// "budging/backend/infrastructure/repository"
-	// "github.com/golang-jwt/jwt/v5"
+	"budging/backend/internal/adapters/enablebanking"
+	"budging/backend/internal/adapters/httpserver"
+	"budging/backend/internal/core/application"
+	"crypto/rsa"
+	"log"
+	"os"
+
+	"github.com/golang-jwt/jwt/v5"
 )
 
 func main() {
-	// var signKey *rsa.PrivateKey
-	// var err error
-	// keyPath := os.Getenv("PEM_KEY_PATH")
-	// key, err := os.ReadFile(keyPath)
-	// if err != nil {
-	// 	log.Fatal("Failed to read sign key: ", err)
-	// }
-	// signKey, err = jwt.ParseRSAPrivateKeyFromPEM(key)
-	// if err != nil {
-	// 	log.Fatal("Invalid sign key")
-	// }
+	var signKey *rsa.PrivateKey
 
-	// tokenProvider := infrastructure.TokenProvider{AppID: os.Getenv("appID"), SignKey: signKey}
-	// repository := repository.NewEnableBankingRepository("https://api.enablebanking.com", signKey)
+	keyPath := os.Getenv("PEM_KEY_PATH")
+	key, err := os.ReadFile(keyPath)
+	if err != nil {
+		log.Fatal("Failed to read sign key: ", err)
+	}
 
-	http.ListenAndServe(":8000", nil)
-	// resp, err := repository.GetAspsp(&tokenProvider)
-	// if err != nil {
-	// 	log.Fatal("Failed to retrieve aspsps")
-	// }
-	// defer resp.Body.Close()
+	signKey, err = jwt.ParseRSAPrivateKeyFromPEM(key)
+	if err != nil {
+		log.Fatal("Invalid sign key")
+	}
 
-	// body, err := io.ReadAll(resp.Body)
-	// if err != nil {
-	// 	log.Fatal("Failed to read response body: ", err)
-	// }
-	// fmt.Println(string(body))
+	enablebankingTokenProvider := &enablebanking.TokenProvider{
+		AppID:   os.Getenv("APP_ID"),
+		SignKey: signKey,
+	}
+	bankClient := &enablebanking.EnableBankingClient{
+		BaseURL:       os.Getenv("ENABLEBANKING_BASE_URL"),
+		TokenProvider: enablebankingTokenProvider,
+	}
+	dependencies := httpserver.NewDependencies(
+		application.NewBankService(bankClient),
+	)
+
+	httpserver.StartHttpServer(dependencies)
 }

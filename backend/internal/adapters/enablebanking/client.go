@@ -8,20 +8,19 @@ import (
 	"net/http"
 )
 
-type EnableBankingRepository struct {
-	baseURL       string
-	tokenProvider *TokenProvider
-	mapper        *Mapper
+type EnableBankingClient struct {
+	BaseURL       string
+	TokenProvider *TokenProvider
 }
 
-func (repository EnableBankingRepository) GetAspsp() ([]domain.Aspsp, error) {
-	token, err := repository.tokenProvider.GetToken()
+func (enablebankingClient *EnableBankingClient) GetAspsp() ([]domain.Aspsp, error) {
+	token, err := enablebankingClient.TokenProvider.GetToken()
 	if err != nil {
 		log.Fatal("Failed to issue token: ", err)
 	}
 
 	var bearer = "Bearer " + token
-	req, err := http.NewRequest("GET", repository.baseURL+"/aspsps", nil)
+	req, err := http.NewRequest("GET", enablebankingClient.BaseURL+"/aspsps", nil)
 	req.Header.Add("Authorization", bearer)
 	req.Header.Add("Host", "api.enablebanking.com")
 	req.Header.Add("Accept", "application/json")
@@ -36,17 +35,17 @@ func (repository EnableBankingRepository) GetAspsp() ([]domain.Aspsp, error) {
 		return nil, err
 	}
 	defer resp.Body.Close()
-	return repository.mapper.MapAspsp(string(body))
+	return MapAspsp(string(body))
 }
 
-func (repository EnableBankingRepository) Authenticate(tokenProvider *TokenProvider) (*http.Response, error) {
-	token, err := tokenProvider.GetToken()
+func (enablebankingClient *EnableBankingClient) Authenticate() (*http.Response, error) {
+	token, err := enablebankingClient.TokenProvider.GetToken()
 	if err != nil {
 		log.Fatal("Failed to issue token: ", err)
 	}
 
 	bearer := "Bearer " + token
-	req, err := http.NewRequest("POST", repository.baseURL+"/auth", nil)
+	req, err := http.NewRequest("POST", enablebankingClient.BaseURL+"/auth", nil)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -62,6 +61,6 @@ func (repository EnableBankingRepository) Authenticate(tokenProvider *TokenProvi
 	return resp, err
 }
 
-func NewEnableBankingClient(baseURL string, signKey *rsa.PrivateKey, appId string) *EnableBankingRepository {
-	return &EnableBankingRepository{baseURL: baseURL, tokenProvider: &TokenProvider{AppID: appId, SignKey: signKey}}
+func NewEnableBankingClient(baseURL string, signKey *rsa.PrivateKey, appId string) *EnableBankingClient {
+	return &EnableBankingClient{BaseURL: baseURL, TokenProvider: &TokenProvider{AppID: appId, SignKey: signKey}}
 }
