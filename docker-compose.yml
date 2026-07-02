@@ -5,7 +5,8 @@ services:
       dockerfile: ./Dockerfile
     environment:
       PEM_KEY_PATH: ${PEM_CONTAINER_PATH}
-    env_file: "./backend/.env"
+    env_file:
+      - "./backend/.env"
     ports:
       - "8000:8000"
     volumes:
